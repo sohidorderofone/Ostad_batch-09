@@ -1,141 +1,72 @@
-# Django Todo App
+1) Preparing Django project locally
+A) Add production-safe host + debug handling
 
-A complete Todo web application built with Django, featuring a modern UI with Tailwind CSS.
+In settings.py:
 
-## Features
 
-- ✅ Create, Read, Update, and Delete tasks
-- ✅ Mark tasks as completed/active
-- ✅ Filter tasks by status (All, Active, Completed)
-- ✅ Set due dates for tasks
-- ✅ Add descriptions to tasks
-- ✅ AJAX toggle completion without page reload
-- ✅ Beautiful, responsive UI with Tailwind CSS
-- ✅ Django messages framework for user feedback
+CSRF_TRUSTED_ORIGINS = [
+    "https://ostad-batch-09.onrender.com", 
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
-## Tech Stack
+B) Fix static files for production (this was required)
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-- **Backend**: Python + Django
-- **Frontend**: Django Templates + Tailwind CSS (via CDN)
-- **Database**: SQLite (for local development)
-- **JavaScript**: Minimal JS for enhanced UX (toggle completion)
 
-## Setup Instructions
+This is what fixed the collectstatic error.
 
-### Prerequisites
+C) Making sure gunicorn in requirements.txt
 
-- Python 3.8 or higher
-- pip (Python package manager)
+Example requirements.txt:
 
-### Installation
+Django>=5.2,<6.0
+gunicorn
 
-1. **Clone or navigate to the project directory:**
-   ```bash
-   cd /path/to/todo_project
-   ```
+2) Push code to GitHub - Render will deploy from GitHub
 
-2. **Create a virtual environment (recommended):**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+3) Create the Render Web Service
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Render Dashboard → New → Web Service
 
-4. **Run migrations:**
-   ```bash
-   python manage.py migrate
-   ```
+Connect to GitHub repo
 
-5. **Create a superuser (optional, for admin access):**
-   ```bash
-   python manage.py createsuperuser
-   ```
+Pick branch main 
 
-6. **Run the development server:**
-   ```bash
-   python manage.py runserver
-   ```
+Environment: Python
 
-7. **Open your browser and navigate to:**
-   ```
-   http://127.0.0.1:8000/
-   ```
+4) Set Render Build + Start commands
+Build Command
+pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
 
-## Project Structure
 
-```
-todo_project/
-├── manage.py
-├── requirements.txt
-├── README.md
-├── db.sqlite3          # SQLite database (created after migrate)
-├── todo_project/       # Project settings
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-├── tasks/              # Tasks app
-│   ├── __init__.py
-│   ├── models.py       # Task model
-│   ├── views.py        # CRUD views
-│   ├── forms.py        # Task form
-│   ├── urls.py         # App URLs
-│   ├── admin.py
-│   ├── tests.py        # Unit tests
-│   └── migrations/     # Database migrations
-└── templates/          # HTML templates
-    ├── base.html
-    └── tasks/
-        ├── task_list.html
-        ├── task_form.html
-        └── task_confirm_delete.html
-```
+What it does:
 
-## Usage
+installs dependencies
 
-### Creating a Task
+applies DB migrations
 
-1. Click the "+ New Task" button on the task list page
-2. Fill in the task title (required)
-3. Optionally add a description and due date
-4. Click "Create Task"
+collects static files into STATIC_ROOT
 
-### Managing Tasks
+Start Command
+gunicorn todo_project.wsgi:application --bind 0.0.0.0:$PORT
 
-- **View Tasks**: All tasks are displayed on the home page
-- **Filter Tasks**: Use the tabs (All/Active/Completed) to filter tasks
-- **Toggle Completion**: Click "Mark Complete" or "Mark Active" to toggle task status
-- **Edit Task**: Click the "Edit" button to modify a task
-- **Delete Task**: Click the "Delete" button and confirm deletion
 
-### Admin Interface
+What it does:
 
-Access the Django admin panel at `http://127.0.0.1:8000/admin/` (requires superuser account).
+starts the app using Gunicorn
 
-## Running Tests
+binds to Render’s provided $PORT
 
-```bash
-python manage.py test
-```
+5) Deploy and fix common errors
+A) If you see: STATIC_ROOT not set
 
-## Development
 
-### Making Changes
+6) Confirm deployment
 
-1. **Model Changes**: After modifying `models.py`, run:
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
+Visit: https://ostad-batch-09.onrender.com/
 
-2. **Static Files**: This project uses Tailwind CSS via CDN, so no static file collection is needed for development.
+Check admin, pages, CSS loads
 
-## License
-
-This project is open source and available for educational purposes.
-
+Check Render logs for errors
